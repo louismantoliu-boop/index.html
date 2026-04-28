@@ -688,6 +688,78 @@
     .adj-row { flex-direction: column; gap: 8px; }
   }
 
+  /* ── Postcode Lookup ── */
+  .postcode-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    margin-bottom: 10px;
+  }
+
+  .postcode-row .field { flex: 1; margin-bottom: 0; }
+
+  .btn-postcode {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 11px 16px;
+    background: var(--sidebar-bg);
+    color: var(--gold-light);
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .btn-postcode:hover { background: var(--sidebar-hover); }
+  .btn-postcode:disabled { opacity: 0.5; cursor: default; }
+
+  .address-dropdown-wrap {
+    position: relative;
+    margin-bottom: 10px;
+    display: none;
+  }
+
+  .address-dropdown-wrap.open { display: block; }
+
+  .address-dropdown {
+    width: 100%;
+    border: 1px solid var(--gold);
+    border-radius: 6px;
+    padding: 11px 14px;
+    font-size: 14px;
+    font-family: 'Noto Sans TC', sans-serif;
+    color: var(--ink);
+    background: var(--white);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235c4f42' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    box-shadow: 0 0 0 3px rgba(184,155,110,0.15);
+    cursor: pointer;
+  }
+
+  .address-dropdown:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  .postcode-msg {
+    font-size: 11px;
+    margin-top: 4px;
+    min-height: 16px;
+  }
+
+  .postcode-msg.error { color: var(--error); }
+  .postcode-msg.success { color: var(--success); }
+  .postcode-msg.loading { color: var(--ink-light); }
+
   /* ── Field validation error ── */
   .field input.field-error,
   .field select.field-error,
@@ -1117,6 +1189,18 @@
       <div class="grid-2">
         <div class="field span-2">
           <label>甲方地址</label>
+          <div class="postcode-row">
+            <div class="field">
+              <input type="text" id="postcodeInput" placeholder="輸入 Postcode，如 SW1A 1AA" style="text-transform:uppercase">
+            </div>
+            <button class="btn-postcode" id="postcodeBtn" onclick="lookupPostcode()">🔍 查地址</button>
+          </div>
+          <div class="postcode-msg" id="postcodeMsg"></div>
+          <div class="address-dropdown-wrap" id="addressDropdownWrap">
+            <select class="address-dropdown" id="addressDropdown" onchange="selectAddress(this.value)">
+              <option value="">— 請選擇地址 —</option>
+            </select>
+          </div>
           <input type="text" id="ownerAddress" placeholder="例：Flat 5, 10 Baker Street, London, E1 6RF">
         </div>
       </div>
@@ -2043,6 +2127,75 @@ function validateSection(n) {
 // ════════════════════════════════════════════════════
 let currentSection = 0;
 const TOTAL = 4;
+
+// ── Postcode Lookup (getAddress.io) ──
+const GETADDRESS_KEY = 'C4AlHyaeGEu6LX5XPQuYGA51732';
+
+async function lookupPostcode() {
+  const input = document.getElementById('postcodeInput');
+  const btn   = document.getElementById('postcodeBtn');
+  const msg   = document.getElementById('postcodeMsg');
+  const wrap  = document.getElementById('addressDropdownWrap');
+  const sel   = document.getElementById('addressDropdown');
+
+  const postcode = input.value.trim().replace(/\s+/g, '');
+  if (!postcode) {
+    showPostcodeMsg('請先輸入 Postcode', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  showPostcodeMsg('查詢中…', 'loading');
+  wrap.classList.remove('open');
+
+  try {
+    const res  = await fetch(`https://api.getaddress.io/find/${encodeURIComponent(postcode)}?api-key=${GETADDRESS_KEY}&expand=true`);
+    const data = await res.json();
+
+    if (!res.ok || !data.addresses || data.addresses.length === 0) {
+      showPostcodeMsg('找不到此 Postcode 的地址，請確認後重試', 'error');
+      btn.disabled = false;
+      return;
+    }
+
+    // Populate dropdown
+    sel.innerHTML = '<option value="">— 請選擇地址 —</option>';
+    data.addresses.forEach((addr, i) => {
+      const parts = [
+        addr.line_1, addr.line_2, addr.line_3,
+        addr.town_or_city, addr.county, data.postcode
+      ].filter(Boolean).join(', ');
+      const opt = document.createElement('option');
+      opt.value = parts;
+      opt.textContent = parts;
+      sel.appendChild(opt);
+    });
+
+    wrap.classList.add('open');
+    showPostcodeMsg(`找到 ${data.addresses.length} 個地址`, 'success');
+  } catch (e) {
+    showPostcodeMsg('查詢失敗，請檢查網路連線', 'error');
+  }
+
+  btn.disabled = false;
+}
+
+function selectAddress(val) {
+  if (!val) return;
+  document.getElementById('ownerAddress').value = val;
+}
+
+function showPostcodeMsg(text, type) {
+  const msg = document.getElementById('postcodeMsg');
+  msg.textContent = text;
+  msg.className = 'postcode-msg ' + type;
+}
+
+// Allow pressing Enter in postcode input
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('postcodeInput');
+  if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); lookupPostcode(); } });
+});
 
 function goSection(n) {
   // Free navigation — no validation required
