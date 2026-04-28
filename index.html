@@ -469,12 +469,103 @@
     transition: width 0.4s ease;
   }
 
-  /* ── Mobile base layout ── */
+  /* ══════════════════════════════════════════
+     MOBILE RESPONSIVE — comprehensive overhaul
+     Breakpoint: 800px (tablet/phone)
+     ══════════════════════════════════════════ */
   @media (max-width: 800px) {
+
+    /* ── Layout ── */
     .page-wrap { grid-template-columns: 1fr; }
-    .sidebar { position: relative; height: auto; max-height: none; }
-    .main { padding: 32px 24px; }
-    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .main { padding: 20px 16px; max-width: 100%; }
+
+    /* ── Sidebar: compact horizontal strip on mobile ── */
+    .sidebar {
+      position: relative;
+      height: auto;
+      padding: 20px 16px 16px;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-area { margin-bottom: 0; display: flex; align-items: center; gap: 12px; text-align: left; }
+    .logo-area .cat-icon { width: 40px; height: auto; margin: 0; }
+    .logo-area h1 { font-size: 16px; }
+    .logo-area p { display: none; }
+    .nav-title { display: none; }
+    .nav-items { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 0; }
+    .nav-item { font-size: 12px; padding: 6px 10px; }
+    .sidebar-bottom { display: none; }  /* hide badges on mobile */
+
+    /* ── Grids ── */
+    .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
+
+    /* ── Step indicator ── */
+    .step-label { display: none; }
+    .step-dot { width: 24px; height: 24px; font-size: 11px; }
+    .step-indicator { margin-bottom: 24px; }
+
+    /* ── Buttons: full-width stacked on mobile ── */
+    .nav-actions {
+      flex-direction: column;
+      gap: 10px;
+      align-items: stretch;
+      margin-top: 24px;
+      padding-top: 16px;
+    }
+    .nav-actions .btn {
+      width: 100%;
+      justify-content: center;
+      padding: 14px 16px;
+      font-size: 15px;
+    }
+    /* Put back-button last visually (less prominent) */
+    .nav-actions .btn-ghost { order: 2; }
+    .nav-actions .btn-primary { order: 1; }
+
+    /* ── Generate button group: stack vertically ── */
+    .nav-actions-generate { margin-top: 20px; }
+    .generate-btn-group {
+      flex-direction: column;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .generate-btn-group .btn {
+      width: 100%;
+      justify-content: center;
+      font-size: 14px;
+      padding: 14px 16px;
+      white-space: normal;
+    }
+
+    /* ── Customer panel header: stack on mobile ── */
+    .customer-panel-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .customer-panel-actions { flex-wrap: wrap; gap: 6px; }
+    .customer-save-btn-sm { font-size: 11px; padding: 6px 12px; }
+
+    /* ── Customer type toggle: full width ── */
+    .customer-type-toggle > div:nth-child(2) { width: 100%; }
+    .customer-type-toggle button { flex: 1; }
+
+    /* ── Fee summary ── */
+    .fee-summary { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .fee-summary .fee-breakdown { text-align: left; }
+
+    /* ── Section header ── */
+    .section-header { margin-bottom: 20px; padding-bottom: 12px; }
+    .section-info h2 { font-size: 17px; }
+
+    /* ── Fields ── */
+    .field input, .field select, .field textarea {
+      font-size: 16px; /* prevents iOS auto-zoom on focus */
+    }
+
+    /* ── Coord panel / admin: hide on mobile ── */
+    .coord-toggle, .coord-panel, .admin-accordion { display: none; }
+
+    /* ── Late return row ── */
+    .surcharge-row { flex-direction: column; }
   }
 
   /* ── Step Indicator ── */
@@ -605,13 +696,7 @@
   }
   .admin-accordion[open] summary::before { content: '▼ '; }
 
-  /* ── Mobile responsive improvements ── */
-  @media (max-width: 800px) {
-    .fee-summary { flex-direction: column; gap: 12px; align-items: flex-start; }
-    .fee-summary .fee-breakdown { text-align: left; }
-    .step-label { display: none; }
-    .customer-panel > div:first-child { flex-direction: column; gap: 8px; align-items: flex-start; }
-  }
+  /* ── Mobile responsive improvements (merged into main block above) ── */
 
 
 
