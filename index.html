@@ -605,8 +605,8 @@
     .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
 
     /* ── Step indicator: uniform across all pages ── */
-    .step-indicator { margin-bottom: 20px; }
-    .step-item { gap: 0; }
+    .step-indicator { margin-bottom: 20px; overflow: hidden; }
+    .step-item { gap: 0; flex-shrink: 1; overflow: hidden; max-width: 28px; }
     .step-label { display: none !important; }
     .step-dot,
     .step-item.active .step-dot,
