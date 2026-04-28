@@ -1075,6 +1075,20 @@
   /* catCount readonly 欄位 */
   .cat-count-readonly { background: rgba(0,0,0,0.1); cursor: default; }
 
+  /* ── Step dot size: force uniform on mobile (highest specificity) ── */
+  @media (max-width: 800px) {
+    #stepIndicator .step-dot {
+      width: 26px !important;
+      height: 26px !important;
+      min-width: 26px !important;
+      min-height: 26px !important;
+      max-width: 26px !important;
+      max-height: 26px !important;
+      font-size: 11px !important;
+      box-sizing: border-box !important;
+    }
+  }
+
   </style>
 </head>
 <body>
@@ -2134,47 +2148,50 @@ const GETADDRESS_KEY = 'C4AlHyaeGEu6LX5XPQuYGA51732';
 async function lookupPostcode() {
   const input = document.getElementById('postcodeInput');
   const btn   = document.getElementById('postcodeBtn');
-  const msg   = document.getElementById('postcodeMsg');
   const wrap  = document.getElementById('addressDropdownWrap');
   const sel   = document.getElementById('addressDropdown');
 
-  const postcode = input.value.trim().replace(/\s+/g, '');
-  if (!postcode) {
-    showPostcodeMsg('請先輸入 Postcode', 'error');
-    return;
-  }
+  // Normalise: uppercase, strip spaces, reinsert space before last 3 chars
+  const raw = input.value.trim().toUpperCase().replace(/\s+/g, '');
+  if (!raw) { showPostcodeMsg('請先輸入 Postcode', 'error'); return; }
+  const postcode = raw.length > 3 ? raw.slice(0, raw.length - 3) + ' ' + raw.slice(-3) : raw;
 
   btn.disabled = true;
   showPostcodeMsg('查詢中…', 'loading');
   wrap.classList.remove('open');
 
   try {
-    const res  = await fetch(`https://api.getaddress.io/find/${encodeURIComponent(postcode)}?api-key=${GETADDRESS_KEY}&expand=true`);
-    const data = await res.json();
+    const url = `https://api.getaddress.io/find/${encodeURIComponent(postcode)}?api-key=${GETADDRESS_KEY}&expand=true`;
+    const res  = await fetch(url, { mode: 'cors' });
 
-    if (!res.ok || !data.addresses || data.addresses.length === 0) {
-      showPostcodeMsg('找不到此 Postcode 的地址，請確認後重試', 'error');
-      btn.disabled = false;
-      return;
+    if (res.status === 401) {
+      showPostcodeMsg('API 授權失敗 — 請到 getaddress.io → Security → Allowed Domains 加入 louismantoliu-boop.github.io', 'error');
+      btn.disabled = false; return;
+    }
+    if (res.status === 404) {
+      showPostcodeMsg('找不到此 Postcode，請確認格式（如 E16 3DS）', 'error');
+      btn.disabled = false; return;
     }
 
-    // Populate dropdown
+    const data = await res.json();
+    if (!data.addresses || data.addresses.length === 0) {
+      showPostcodeMsg('此 Postcode 查無地址', 'error');
+      btn.disabled = false; return;
+    }
+
     sel.innerHTML = '<option value="">— 請選擇地址 —</option>';
-    data.addresses.forEach((addr, i) => {
-      const parts = [
-        addr.line_1, addr.line_2, addr.line_3,
-        addr.town_or_city, addr.county, data.postcode
-      ].filter(Boolean).join(', ');
+    data.addresses.forEach(addr => {
+      const parts = [addr.line_1, addr.line_2, addr.line_3, addr.town_or_city, addr.county, postcode]
+        .filter(Boolean).join(', ');
       const opt = document.createElement('option');
-      opt.value = parts;
-      opt.textContent = parts;
+      opt.value = parts; opt.textContent = parts;
       sel.appendChild(opt);
     });
 
     wrap.classList.add('open');
-    showPostcodeMsg(`找到 ${data.addresses.length} 個地址`, 'success');
+    showPostcodeMsg('✓ 找到 ' + data.addresses.length + ' 個地址', 'success');
   } catch (e) {
-    showPostcodeMsg('查詢失敗，請檢查網路連線', 'error');
+    showPostcodeMsg('查詢失敗 — 請到 getaddress.io → Security → Allowed Domains 加入 louismantoliu-boop.github.io', 'error');
   }
 
   btn.disabled = false;
