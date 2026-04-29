@@ -2370,7 +2370,7 @@ async function generatePDF(suppressReset) {
     const joinText = (key) => {
       if (pets.length === 1) {
         const v = pets[0][key];
-        return (v && v !== '无') ? v : '無';
+        return (v && v !== '无') ? v : '无';
       }
       const parts = pets.map(p => ({ name: p.name, val: p[key] }))
         .filter(o => o.val && o.val !== '无');
