@@ -1205,7 +1205,7 @@
         </div>
         <div class="field">
           <label>每日費用 (£ / 隻)</label>
-          <input type="number" id="dailyRate" placeholder="例：25" step="0.01" oninput="calculateFees()">
+          <input type="number" id="dailyRate" placeholder="例：25" step="0.01" oninput="calculateFees()" onchange="calculateFees()" onblur="calculateFees()">
         </div>
         <div class="field">
           <label>貓咪數量</label>
@@ -2231,6 +2231,9 @@ function showStatus(msg, type) {
 async function generatePDF(suppressReset) {
 
 
+  // 強制重新計算費用，確保 PDF 使用最新輸入值
+  calculateFees();
+
   // Read any open coord table edits
   readCoordTable();
 
@@ -2280,7 +2283,25 @@ async function generatePDF(suppressReset) {
     const totalDays      = document.getElementById('totalDays').value;
     const dailyRate      = document.getElementById('dailyRate').value;
     const catCount       = document.getElementById('catCount').value;
-    const totalFee       = document.getElementById('totalFeeDisplay').textContent.replace('£ ','').trim();
+    // 直接從輸入值重新計算，確保不使用任何舊的快取顯示值
+    const _rate_calc   = parseFloat(dailyRate) || 0;
+    const _days_calc   = parseInt(totalDays) || 0;
+    const _cats_calc   = parseInt(catCount) || 1;
+    const _disc_calc   = parseFloat(document.getElementById('discount').value) || 0;
+    const _discType_c  = window._discType || 'pct';
+    const _surcharge_c = parseFloat(document.getElementById('surcharge').value) || 0;
+    const _late_c      = parseInt(document.getElementById('lateReturnDays')?.value) || 0;
+    const _groom_c     = document.getElementById('addGrooming').checked ? 60 : 0;
+    const _neuter_c    = document.getElementById('addNeuterTransport')?.checked ? 50 : 0;
+    const _vaccine_c   = document.getElementById('addVaccineTransport')?.checked ? 30 : 0;
+    const _ehc_c       = document.getElementById('addEHC')?.checked ? 600 : 0;
+    const _base_c      = _days_calc * _rate_calc * _cats_calc;
+    const _lateAmt_c   = _late_c * _rate_calc * _cats_calc;
+    const _discAmt_c   = _disc_calc > 0
+      ? (_discType_c === 'pct' ? _base_c * (_disc_calc / 100) : Math.min(_disc_calc, _base_c))
+      : 0;
+    const _calcTotal   = (_base_c - _discAmt_c) + _groom_c + _neuter_c + _vaccine_c + _ehc_c + _surcharge_c + _lateAmt_c;
+    const totalFee     = _calcTotal > 0 ? _calcTotal.toFixed(2) : (document.getElementById('totalFeeDisplay').textContent.replace('£ ','').trim());
 
     const boardingStr = startDate && endDate
       ? `${startDate} 至 ${endDate}，共 ${totalDays} 天`
@@ -2848,6 +2869,9 @@ async function processLogoForPDF(pdfDoc) {
 //  Invoice PDF Generator  (v2 — all fixes applied)
 // ════════════════════════════════════════════════════
 async function generateInvoice(suppressReset, mode) {
+  // 強制重新計算費用，確保 Invoice 使用最新輸入值
+  calculateFees();
+
   // mode: undefined = full invoice (returning customer)
   //       'deposit' = 10% deposit receipt (new customer)
   //       'balance' = 90% balance receipt (new customer)
