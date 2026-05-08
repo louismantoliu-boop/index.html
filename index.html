@@ -3193,9 +3193,9 @@ async function generateInvoice(suppressReset, mode) {
   y -= 13;
   const bankRows = [
     ['Bank',           'Revolut Ltd'],
-    ['Account Name',   'Man To Liu'],  // legal account name stays
-    ['Sort Code',      '04-29-09'],
-    ['Account Number', '24265209'],
+    ['Account Name',   'Ai Chiang'],
+    ['Sort Code',      '23-01-20'],
+    ['Account Number', '28327515'],
   ];
   const BK1 = V1;
   const BK2 = V1 + 96;
@@ -3310,7 +3310,7 @@ async function generateInvoice(suppressReset, mode) {
 
   const paymentLines = [
     `Please reference invoice number ${invDisplay} when making payment.`,
-    `For any queries, please contact us at catbnbuk@gmail.com.`,
+    `For any queries, please contact us at catbnb@gmail.com.`,
   ];
   for (const line of paymentLines) {
     page.drawText(line, { x: ML, y, size: 8.5, font: fontReg, color: C_LIGHT, maxWidth: PW });
@@ -3679,7 +3679,7 @@ const CONTRACT_TEXT = {
     sign_phone:     '聯繫電話：',
     sign_line:      '簽名：_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _',
     sign_partyB:    '乙方：CATBNB',
-    sign_partyB_phone: '聯繫電話：07933133293',
+    sign_partyB_phone: '聯繫電話：07399141288',
 
     // ── PDF 附加服務標籤 ──
     field_none:   '無',
@@ -3825,7 +3825,7 @@ const CONTRACT_TEXT = {
     sign_phone:     '联系电话：',
     sign_line:      '签名：_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _',
     sign_partyB:    '乙方：CATBNB',
-    sign_partyB_phone: '联系电话：07933133293',
+    sign_partyB_phone: '联系电话：07399141288',
 
     // ── PDF 附加服务标签 ──
     field_none:   '无',
